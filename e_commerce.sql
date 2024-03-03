@@ -199,13 +199,17 @@ group by supp_name, supp_city, supp_phone, supp_id
 having count(pro_id)>1;
 
 -- 7) Find the least expensive product from each category and print the table with category id, name, product name and price of the product
-select cat_id, cat_name,  min(supp_price) as 'least expensive' from category 
-join product
-using(cat_id)
-join supplier_pricing
-using (pro_id)
-group by cat_id
-having min(supp_price);
+SELECT c.CAT_ID, c.CAT_NAME, p.PRO_NAME, Min_Price
+FROM category c
+JOIN product p ON c.CAT_ID = p.CAT_ID
+JOIN (
+    SELECT p.CAT_ID, MIN(sp.SUPP_PRICE) AS Min_Price
+    FROM product p
+    JOIN supplier_pricing sp ON p.PRO_ID = sp.PRO_ID
+    GROUP BY p.CAT_ID
+) AS cheapest_prices ON p.CAT_ID = cheapest_prices.CAT_ID
+JOIN supplier_pricing sp ON p.PRO_ID = sp.PRO_ID AND cheapest_prices.Min_Price = sp.SUPP_PRICE
+ORDER BY Min_Price ASC;;
 
 -- 8) Display the Id and Name of the Product ordered after “2021-10-05”.
 select pro_id, pro_name from product
